@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POP | Programmers Of Posco</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #060b16;
+      --bg-mid: #0b1324;
+      --neon-blue: #2eeaff;
+      --soft-blue: #8fdfff;
+      --white: #ffffff;
+      --sphere-move: 40;
+      --mx: 0;
+      --my: 0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Pretendard', sans-serif;
+      background: var(--bg-dark);
+      color: var(--white);
+      overflow-x: hidden;
+    }
+
+    /* ================= HEADER ================= */
+    #site-header {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 64px;
+      z-index: 100;
+      display: flex; align-items: center;
+      background: rgba(6,11,22,0);
+      transition: background .3s ease, backdrop-filter .3s ease;
+    }
+    #site-header.scrolled {
+      background: rgba(6,11,22,.65);
+      backdrop-filter: blur(10px);
+    }
+    .header-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+      width: 100%; display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo { font-weight: 700; letter-spacing: .12em; color: var(--neon-blue); }
+    .nav a { margin-left: 28px; color: #fff; text-decoration: none; opacity: .85; }
+
+    /* ================= HERO ================= */
+    #hero {
+      height: 100vh; position: relative;
+      display: flex; align-items: center;
+    }
+    #star-bg { position: absolute; inset: 0; z-index: 0; }
+
+    .hero-content {
+      position: relative; z-index: 2;
+      max-width: 600px; margin-left: 8vw;
+    }
+    .hero-subtitle {
+      font-size: 18px; letter-spacing: .08em; color: var(--soft-blue);
+      margin-bottom: 12px; white-space: nowrap; overflow: hidden;
+      border-right: 2px solid var(--soft-blue);
+      width: 0; animation: typing 1.8s steps(20) forwards, blink .8s infinite;
+    }
+    @keyframes typing { to { width: 100%; } }
+    @keyframes blink { 50% { border-color: transparent; } }
+
+    .hero-title { font-size: 56px; line-height: 1.25; font-weight: 700; }
+    .hero-title .line {
+      display: inline-block; opacity: 0; transform: translateY(20px);
+      animation: fadeUp 1s ease forwards;
+    }
+    .hero-title .line:nth-of-type(1) { animation-delay: .6s; }
+    .hero-title .line:nth-of-type(2) { animation-delay: 1.2s; }
+    .hero-title .highlight { color: var(--neon-blue); text-shadow: 0 0 20px rgba(46,234,255,.6); }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+    .hero-visual { position: absolute; right: 10vw; z-index: 1; pointer-events: none; }
+    .sphere-float { width: 320px; height: 320px; animation: floatY 6s ease-in-out infinite; }
+    @keyframes floatY { 0%{transform:translateY(0)}50%{transform:translateY(-20px)}100%{transform:translateY(0)} }
+    .ai-sphere {
+      width: 100%; height: 100%; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #8fdfff, #1a3cff);
+      box-shadow: 0 0 60px rgba(46,234,255,.5), inset 0 0 40px rgba(255,255,255,.2);
+      transform: translate3d(calc(var(--mx)*1px), calc(var(--my)*1px), 0);
+      transition: transform .12s ease-out;
+    }
+
+    /* ================= COMMON SECTION ================= */
+    section.reveal-section {
+      padding: 140px 24px;
+      opacity: 0; transform: translateY(40px);
+      transition: opacity .8s ease, transform .8s ease;
+    }
+    section.reveal-section.revealed {
+      opacity: 1; transform: translateY(0);
+    }
+    .section-inner { max-width: 1100px; margin: 0 auto; }
+    .section-title {
+      font-size: 36px; font-weight: 700; margin-bottom: 32px;
+      color: var(--neon-blue); text-shadow: 0 0 20px rgba(46,234,255,.3);
+    }
+
+    /* ================= ABOUT ================= */
+    #about { background: linear-gradient(180deg, var(--bg-dark), var(--bg-mid)); }
+    .about-main { font-size: 20px; line-height: 1.7; margin-bottom: 24px; }
+    .about-desc { font-size: 16px; line-height: 1.8; opacity: .9; margin-bottom: 16px; }
+
+    /* ================= WHY POP ================= */
+    #why-pop { background: var(--bg-mid); }
+    .why-cards {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 28px;
+    }
+    .why-card {
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px; padding: 28px; backdrop-filter: blur(6px);
+      opacity: 0; transform: translateY(20px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .why-card.show { opacity: 1; transform: translateY(0); }
+    .why-card h3 { color: var(--neon-blue); margin-bottom: 12px; }
+
+    /* ================= ACTIVITIES ================= */
+    #activities { background: var(--bg-dark); }
+    .activity-tabs { display: flex; gap: 16px; margin-bottom: 32px; }
+    .activity-tabs button {
+      background: none; border: 1px solid rgba(255,255,255,.2);
+      color: #fff; padding: 10px 18px; border-radius: 20px; cursor: pointer;
+      opacity: .7;
+    }
+    .activity-tabs button.active {
+      opacity: 1; border-color: var(--neon-blue); color: var(--neon-blue);
+    }
+    .panel { display: none; font-size: 18px; line-height: 1.7; }
+    .panel.active { display: block; }
+
+    @media (max-width: 900px) {
+      .hero-title { font-size: 42px; }
+      .sphere-float { width: 240px; height: 240px; }
+    }
+  
+    /* FOOTER */
+    #site-footer {
+      background: #060b16;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 48px 24px;
+    }
+
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      text-align: center;
+      opacity: 0.85;
+    }
+
+    .footer-title {
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--neon-blue);
+      margin-bottom: 8px;
+    }
+
+    .footer-sub {
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      opacity: 0.6;
+    }
+
+  </style>
+</head>
+<body>
+
+<header id="site-header">
+  <div class="header-inner">
+    <div class="logo">POP</div>
+    <nav class="nav">
+      <a href="#about">POP 소개</a>
+      <a href="#why-pop">WHY POP</a>
+      <a href="#activities">활동</a>
+    </nav>
+  </div>
+</header>
+
+<section id="hero">
+  <canvas id="star-bg"></canvas>
+  <div class="hero-content">
+    <p class="hero-subtitle">Programmers Of Posco</p>
+    <h1 class="hero-title">
+      <span class="line">상상을 설계하고</span><br>
+      <span class="line highlight">AI로 완성하다</span>
+    </h1>
+  </div>
+  <div class="hero-visual"><div class="sphere-float"><div class="ai-sphere"></div></div></div>
+</section>
+
+<section id="about" class="reveal-section">
+  <div class="section-inner">
+    <h2 class="section-title">POP 소개</h2>
+    <p class="about-main">
+      POP(Programmers Of Posco)는 <strong>인공지능 기반 메이킹 활동</strong>을 중심으로,
+      AI 기술을 직접 만들고 적용해보는 경험을 제공하는 코딩 동아리입니다.
+    </p>
+    <p class="about-desc">
+      단순히 인공지능을 배우는 데서 그치지 않고, 모델 실험과 코딩 체험, 창작 활동,
+      그리고 생활 속 문제를 해결하는 프로젝트까지 폭넓게 다룹니다.
+      특히 <strong>AI 아트 작품 제작</strong>을 중심으로 한 생성 활동을 통해,
+      기술을 결과물로 완성하는 경험을 중요하게 생각합니다.
+    </p>
+    <p class="about-desc">
+      POP는 생활 속에서 활용 가능한 AI 아이디어를 탐색하고,
+      이를 실제로 작동하는 결과물로 구현하는 것을 목표로 합니다.
+      AI를 활용한 창의적인 메이킹 활동과 체험 중심 프로그램을 통해
+      학생들이 스스로 기술을 이해하고 응용할 수 있도록 돕는 동아리입니다.
+    </p>
+  </div>
+</section>
+
+<section id="why-pop" class="reveal-section">
+  <div class="section-inner">
+    <h2 class="section-title">WHY POP?</h2>
+    <div class="why-cards">
+      <div class="why-card">
+        <h3>AI 모델 직접 실험</h3>
+        <p>수업에서 배우는 이론에 그치지 않고, 실제 AI 모델을 직접 구현하고 실험하며 인공지능의 구조와 동작 원리를 깊이 이해합니다.</p>
+      </div>
+      <div class="why-card">
+        <h3>창작 중심 메이킹</h3>
+        <p>AI 아트, 생성형 콘텐츠 등 결과물이 분명히 남는 창작 활동을 통해 기술을 표현하고 공유하는 경험을 제공합니다.</p>
+      </div>
+      <div class="why-card">
+        <h3>생활 문제 해결</h3>
+        <p>학교와 일상에서 마주하는 다양한 문제를 AI로 해결하는 프로젝트를 기획하고 실제로 구현합니다.</p>
+      </div>
+      <div class="why-card">
+        <h3>체험 중심 성장</h3>
+        <p>듣고 배우는 활동이 아니라, 직접 만들고 적용해보는 경험을 통해 스스로 성장하는 동아리입니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="activities" class="reveal-section">
+  <div class="section-inner">
+    <h2 class="section-title">주요 활동</h2>
+    <div class="activity-tabs">
+      <button class="active" data-tab="p1">AI & Python</button>
+      <button data-tab="p2">AI Sound</button>
+      <button data-tab="p3">AI Image</button>
+      <button data-tab="p4">AI 창작</button>
+    </div>
+    <div class="panel active" id="p1">Python을 활용해 AI의 기본 구조를 이해하고, 간단한 모델을 직접 구현하며 인공지능 개발의 기초를 다집니다.</div>
+    <div class="panel" id="p2">소리를 분석하고 분류하거나 새로운 소리를 생성하는 AI Sound 프로젝트를 통해 AI의 활용 범위를 확장합니다.</div>
+    <div class="panel" id="p3">이미지를 생성·변형·분석하는 다양한 실험을 통해 생성형 AI의 원리와 표현 방식을 탐구합니다.</div>
+    <div class="panel" id="p4">개인의 아이디어를 바탕으로 자유로운 AI 창작 프로젝트를 기획하고 결과물로 완성합니다.</div>
+  </div>
+</section>
+
+<section id="recruit" class="reveal-section">
+  <div class="section-inner">
+    <h2 class="section-title">모집 안내</h2>
+    <p class="about-main">
+      POP는 인공지능과 코딩에 관심 있는 학생이라면 누구나 환영합니다.
+      전공이나 기존 실력보다 <strong>호기심과 도전 의지</strong>를 더 중요하게 생각합니다.
+    </p>
+    <p class="about-desc">
+      AI를 처음 접하는 학생부터, 이미 코딩 경험이 있는 학생까지
+      각자의 수준에 맞게 배우고 성장할 수 있는 활동을 함께 만들어갑니다.
+    </p>
+
+    <ul class="recruit-list">
+      <li>✔ 인공지능·코딩·창작에 관심 있는 학생</li>
+      <li>✔ 직접 만들고 실험해보는 활동을 해보고 싶은 학생</li>
+      <li>✔ 결과물이 남는 프로젝트를 경험하고 싶은 학생</li>
+    </ul>
+
+    <p class="cta-note">자세한 일정과 지원 방법은 학교 공지를 통해 안내됩니다.</p>
+  </div>
+</section>
+
+<footer id="site-footer">
+  <div class="footer-inner">
+    <p class="footer-title">POP · Programmers Of Posco</p>
+    <p class="footer-sub">Incheon Posco Academy · AI Programming Club</p>
+    <p class="footer-copy">© 2026 POP. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+  /* ===== Canvas stars ===== */
+  const canvas = document.getElementById('star-bg');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  function resize(){ canvas.width=innerWidth; canvas.height=innerHeight; }
+  function init(){ stars=Array.from({length:120},()=>({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.5+.5,s:Math.random()*.5+.2})) }
+  window.addEventListener('resize',()=>{resize();init();}); resize(); init();
+  (function anim(){ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle='rgba(255,255,255,.8)'; stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill(); s.y+=s.s; if(s.y>canvas.height){s.y=0;s.x=Math.random()*canvas.width}}); requestAnimationFrame(anim); })();
+
+  /* ===== Sphere follow ===== */
+  const root=document.documentElement;
+  addEventListener('mousemove',e=>{ const nx=e.clientX/innerWidth-.5, ny=e.clientY/innerHeight-.5; const m=40; root.style.setProperty('--mx',(nx*m).toFixed(2)); root.style.setProperty('--my',(ny*m).toFixed(2)); });
+
+  /* ===== Header scroll ===== */
+  const header=document.getElementById('site-header');
+  addEventListener('scroll',()=>{ header.classList.toggle('scrolled', scrollY>40); });
+
+  /* ===== Ordered section reveal ===== */
+  const sections=[...document.querySelectorAll('.reveal-section')];
+  let currentIndex=0;
+  const sectionObserver=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting && sections[currentIndex]===e.target){
+        e.target.classList.add('revealed');
+        // WHY POP 카드 순차
+        if(e.target.id==='why-pop'){
+          e.target.querySelectorAll('.why-card').forEach((c,i)=>setTimeout(()=>c.classList.add('show'), i*120));
+        }
+        sectionObserver.unobserve(e.target);
+        currentIndex++;
+      }
+    });
+  },{threshold:.25});
+  sections.forEach(s=>sectionObserver.observe(s));
+
+  /* ===== Activities tabs ===== */
+  document.querySelectorAll('.activity-tabs button').forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll('.activity-tabs button').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active'); document.getElementById(btn.dataset.tab).classList.add('active');
+    }
+  });
+</script>
+</body>
+</html>
